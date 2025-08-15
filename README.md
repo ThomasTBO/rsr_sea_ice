@@ -114,4 +114,5 @@ In the example repository of this project, you can find the results I got by app
 ## Contact
 
 Author : Thomas Thébault, Aug 2025
+
 Mail : thomas.thebault@student.isae-supaero.fr
