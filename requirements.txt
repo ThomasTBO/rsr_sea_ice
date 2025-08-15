@@ -1,15 +1,8 @@
 numpy
 matplotlib
 pandas
-csv
-os
-json
-concurrent.futures
-ftplib
-xml
 netCDF4
 scipy
-mpl_toolkits
+basemap
 rsr
-importlib
 pyproj
