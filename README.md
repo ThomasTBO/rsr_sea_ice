@@ -1,4 +1,4 @@
-# Project Title
+# rsr_sea_ice
 
 ## Overview
 The purpose of this project is to apply the  Radar Statistical Reconnaissance (RSR) technique over Arctic sea ice, to get the spatial distribution of the Coherent and Non Coherent Power (Pc and Pn).
@@ -10,17 +10,15 @@ The data used is the Cryosat-2 Synthetic Aperture Radar (SAR) Full Bit Rate (FBR
 - [Installation](#installation)
 - [Usage](#usage)
 - [Documentation](#documentation)
-- [Examples](#examples)
-- [Contributing](#contributing)
-- [License](#license)
+- [Example](#example)
 - [Contact](#contact)
 
 
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/yourproject.git
-cd yourproject
+git clone https://github.com/yourusername/rsr_sea_ice.git
+cd rsr_sea_ice
 pip install -r requirements.txt
 python rsr_package_modification.py
 ```
@@ -109,6 +107,11 @@ If `latlon_target_list` is provided, it will also plot the distributions and HK 
 - ```nb_closest``` (int): Number of closest points to consider for each target. (e.g. if you indicate 1000, there will be 64000 psep values in input of the rsr, as each burst is composed of 64 echoes). Defaults to 1000
 
 
+## Example
 
-## Examples
+In the example repository of this project, you can find the results I got by applying this code to the Nov 2017 Cryosat-2 data : the csv files with the rsr results (output of step 2) and some figures (output of step 3)
+
 ## Contact
+
+Author : Thomas Thébault, Aug 2025
+Mail : thomas.thebault@student.isae-supaero.fr
