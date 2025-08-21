@@ -2,13 +2,13 @@ import importlib.util
 import os
 
 old_block_run_1 = "def processor(amp, gain=0., bins='stone', fit_model='hk', scaling=True, **kwargs):\n    \"\"\"Apply RSR over a sample of amplitudes"
-new_block_run_1 = "def processor(amp, gain=0., bins='stone', fit_model='hk', scaling=True, min_method='leastsq', **kwargs):\n    \"\"\"Apply RSR over a sample of amplitudes\n\n    /!\\ This function has been modified from the original C.Grima implementation"
+new_block_run_1 = "def processor(amp, gain=0., bins='stone', fit_model='hk', scaling=True, min_method='leastsq', **kwargs):\n    \"\"\"Apply RSR over a sample of amplitudes\n\n    Warning: This function has been modified from the original C.Grima implementation"
 
 old_block_run_2 = "    a = fit.lmfit( np.abs(amp), bins=bins, fit_model=fit_model)"
 new_block_run_2 = "    a = fit.lmfit( np.abs(amp), bins=bins, fit_model=fit_model, min_method=min_method)"
 
 old_block_fit_1 = "def lmfit(sample, fit_model='hk', bins='auto', p0 = None,\n          xtol=1e-4, ftol=1e-4):\n    \"\"\"Lmfit"
-new_block_fit_1 = "def lmfit(sample, fit_model='hk', bins='auto', p0 = None,\n          xtol=1e-4, ftol=1e-4, min_method='leastsq'):\n    \"\"\"Lmfit\n    \n    /!\\ This function has been modified from the original C.Grima implementation"
+new_block_fit_1 = "def lmfit(sample, fit_model='hk', bins='auto', p0 = None,\n          xtol=1e-4, ftol=1e-4, min_method='leastsq'):\n    \"\"\"Lmfit\n    \n    Warning: This function has been modified from the original C.Grima implementation"
 
 old_block_fit_2 = "    # use 'lbfgs' fit if error with 'leastsq' fit\n    try:\n        p = minimize(pdf2use, prm0, args=(x, n), method='leastsq',\n            xtol=xtol, ftol=ftol)\n    except KeyboardInterrupt:\n        raise\n    except:\n        # TODO: do we expect a specific exception?\n        print('!! Error with LEASTSQ fit, use L-BFGS-B instead')\n        p = minimize(pdf2use, prm0, args=(x, n), method='lbfgs')"
 new_block_fit_2 = "    # use 'leastsq' or 'lbfgs' fit if error with min_method fit\n    try:\n        p = minimize(pdf2use, prm0, args=(x, n), method=min_method,\n            xtol=xtol, ftol=ftol)\n        if p.params['mu'] == 0:\n            raise ValueError(\"Mu parameter is zero, which is invalid.\")\n    except:\n        print(f\"'!! Error with {min_method} fit, use LEASTSQ instead'\")\n        try:\n            p = minimize(pdf2use, prm0, args=(x, n), method='leastsq',\n                xtol=xtol, ftol=ftol)\n        except ValueError:\n            raise\n        except:\n            # TODO: do we expect a specific exception?\n            print('!! Error with LEASTSQ fit, use L-BFGS-B instead')\n            p = minimize(pdf2use, prm0, args=(x, n), method='lbfgs')"
