@@ -91,9 +91,9 @@ def apply_rsr_core(latlon_target_array,  latlon_array, powers_2D_array, path_to_
             writer.writerow([latlon_target[0], latlon_target[1], value_str, power_str, crl_str, flag_str])
 
     print(f"Core {core_id}: RSR processing completed and results saved.")
-    
-    
-def apply_rsr_batch(latlon_target_array, KD_tree, dictionary, powers_2D_array, core_id, index, nb_targets_core, nb_closest=1000, min_method='leastsq'):
+
+
+def apply_rsr_batch(latlon_target_array, KD_tree, dictionary, powers_2D_array, core_id, index, nb_targets_core, nb_closest=1000, min_method='least_squares'):
     """Apply RSR to a batch of target points.
 
     Args:
@@ -105,7 +105,7 @@ def apply_rsr_batch(latlon_target_array, KD_tree, dictionary, powers_2D_array, c
         index (int): Index of the batch.
         nb_targets_core (int): Total number of targets for the core.
         nb_closest (int): Number of closest points to consider for each target. (e.g. if you indicate 1000, there will be 64000 psep values in input of the rsr, as each burst is composed of 64 echoes)
-        min_method (str): Minimization method used in the lmfit HK-fitting. Defaults to 'leastsq'.
+        min_method (str): Minimization method used in the lmfit HK-fitting. Defaults to 'least_squares'.
 
     Returns:
         list: List of tuples containing target coordinates and RSR results.

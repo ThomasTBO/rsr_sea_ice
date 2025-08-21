@@ -69,7 +69,7 @@ Requirement : The uit_cryosat2_L2_alongtrack_year_month.csv file must be in the 
 ### apply_rsr_arctic
 
 ```python 
-apply_rsr_arctic(path, nb_cores=8, nb_closest=1000, step_km=10, lat_min=72., min_method='leastsq')
+apply_rsr_arctic(path, nb_cores=8, nb_closest=1000, step_km=10, lat_min=72., min_method='least_squares')
 ```
 Apply RSR to the Arctic grid and save the results in CSV files.
 
@@ -83,13 +83,13 @@ Apply RSR to the Arctic grid and save the results in CSV files.
 - ```nb_closest``` (int): Number of closest points to consider for each target. (e.g. if you indicate 1000, there will be 64000 psep values in input of the rsr, as each burst is composed of 64 echoes). Defaults to 1000
 - ```step_km``` (int): The distance between grid points in kilometers. Defaults to 10.
 - ```lat_min``` (float): Minimum latitude for filtering (deg). Defaults to 72.0
-- ```min_method``` (str): Minimization method used in the lmfit HK-fitting. Defaults to 'leastsq'.
+- ```min_method``` (str): Minimization method used in the lmfit HK-fitting. Defaults to 'least_squares'.
 
 
 ### plot_rsr_results
 
 ```python 
-plot_rsr_results(path_to_data, year, month, latlon_target_list=None, nb_closest=1000)
+plot_rsr_results(path_to_data, year, month, latlon_target_list=None, nb_closest=1000, min_method='least_squares')
 ```
 Plot RSR results from all CSV files in the specified directory beginning with 'rsr_results_'.
 This function generates scatter plots for total power, incoherent power, coherent power, and correlation coefficient.
@@ -106,6 +106,7 @@ If `latlon_target_list` is provided, it will also plot the distributions and HK 
 
 - ```latlon_target_list``` (list): List of target latitude/longitude for distribution plotting. Defaults to None.
 - ```nb_closest``` (int): Number of closest points to consider for each target. (e.g. if you indicate 1000, there will be 64000 psep values in input of the rsr, as each burst is composed of 64 echoes). Defaults to 1000
+- ```min_method``` (str): Minimization method used in the lmfit HK-fitting. Defaults to 'least_squares'.
 
 
 ## Example

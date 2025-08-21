@@ -152,6 +152,8 @@ def find_closest_points(tree, latlon_target_list, k=1000, **kwargs):
         np.ndarray: An array of shape (M, k) with the indices of the k closest points for each target.
     """
     latlon_target_array = np.array(latlon_target_list)
+    if latlon_target_array.ndim == 1:
+        latlon_target_array = latlon_target_array.reshape(1, 2)
     points_cartesian = latlon_to_cartesian(latlon_target_array[:, 0], latlon_target_array[:, 1])
     _, indices = tree.query(points_cartesian, k=k)
     
