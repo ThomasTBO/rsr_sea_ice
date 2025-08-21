@@ -69,7 +69,7 @@ Requirement : The uit_cryosat2_L2_alongtrack_year_month.csv file must be in the 
 ### apply_rsr_arctic
 
 ```python 
-apply_rsr_arctic(path, nb_cores=8, nb_closest=1000, step_km=10, lat_min=72.)
+apply_rsr_arctic(path, nb_cores=8, nb_closest=1000, step_km=10, lat_min=72., min_method='leastsq')
 ```
 Apply RSR to the Arctic grid and save the results in CSV files.
 
@@ -83,6 +83,7 @@ Apply RSR to the Arctic grid and save the results in CSV files.
 - ```nb_closest``` (int): Number of closest points to consider for each target. (e.g. if you indicate 1000, there will be 64000 psep values in input of the rsr, as each burst is composed of 64 echoes). Defaults to 1000
 - ```step_km``` (int): The distance between grid points in kilometers. Defaults to 10.
 - ```lat_min``` (float): Minimum latitude for filtering (deg). Defaults to 72.0
+- ```min_method``` (str): Minimization method used in the lmfit HK-fitting. Defaults to 'leastsq'.
 
 
 ### plot_rsr_results

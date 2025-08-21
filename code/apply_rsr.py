@@ -1,5 +1,4 @@
-from utils import arctic_grid,read_psep_from_csv, is_ice
-from find_closest_KD import build_KDtree, find_closest_points
+from utils import arctic_grid,read_psep_from_csv, is_ice, build_KDtree, find_closest_points
 from concurrent.futures import ProcessPoolExecutor
 import csv
 import json
@@ -25,7 +24,7 @@ def apply_rsr_arctic(path, **kwargs):
     apply_rsr(latlon_target_array, latlon_array, powers_2D_array, path, **kwargs)
     
 
-def apply_rsr(latlon_target_array, latlon_array, powers_2D_array, path, nb_cores=8):
+def apply_rsr(latlon_target_array, latlon_array, powers_2D_array, path, nb_cores=8, **kwargs):
     """Apply RSR to each target and save the results in csv files.
 
     Args:
@@ -41,12 +40,14 @@ def apply_rsr(latlon_target_array, latlon_array, powers_2D_array, path, nb_cores
 
     latlon_target_array_filtered = [latlon_target for latlon_target in latlon_target_array if is_ice(latlon_target, KD_tree)]
     print(f"Number of target points over ice: {len(latlon_target_array_filtered)} / {len(latlon_target_array)}")
+    
+    latlon_target_array_filtered = latlon_target_array_filtered[0:30]
 
     # Split the filtered target points among the available cores
     nb_target_per_core = len(latlon_target_array_filtered) // nb_cores
     futures = []
     with ProcessPoolExecutor(max_workers=nb_cores) as executor:
-        futures = [executor.submit(apply_rsr_core, latlon_target_array_filtered[i*nb_target_per_core:(i + 1)*nb_target_per_core], latlon_array, powers_2D_array, path, i, **kwargs) for i in range(nb_cores-1)]
+        futures = [executor.submit(apply_rsr_core, latlon_target_array_filtered[i*nb_target_per_core:((i + 1)*nb_target_per_core if i!=nb_cores-1 else len(latlon_target_array_filtered))], latlon_array, powers_2D_array, path, i, **kwargs) for i in range(nb_cores)]
 
     print("RSR processing completed and results saved.")
     
@@ -79,7 +80,7 @@ def apply_rsr_core(latlon_target_array,  latlon_array, powers_2D_array, path_to_
 
 
     print(f"Core {core_id}: Saving RSR results in csv")
-    with open(path_to_data+'rsr_results_core_'+str(core_id)+'.csv', 'w', newline='') as csvfile:
+    with open(os.path.join(path_to_data, 'rsr_results_core_'+str(core_id)+'.csv'), 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['lat', 'lon', 'value', 'power', 'crl', 'flag'])
         for (latlon_target, f) in results:
@@ -92,7 +93,7 @@ def apply_rsr_core(latlon_target_array,  latlon_array, powers_2D_array, path_to_
     print(f"Core {core_id}: RSR processing completed and results saved.")
     
     
-def apply_rsr_batch(latlon_target_array, KD_tree, dictionary, powers_2D_array, core_id, index, nb_targets_core, nb_closest=1000):
+def apply_rsr_batch(latlon_target_array, KD_tree, dictionary, powers_2D_array, core_id, index, nb_targets_core, nb_closest=1000, min_method='leastsq'):
     """Apply RSR to a batch of target points.
 
     Args:
@@ -104,6 +105,7 @@ def apply_rsr_batch(latlon_target_array, KD_tree, dictionary, powers_2D_array, c
         index (int): Index of the batch.
         nb_targets_core (int): Total number of targets for the core.
         nb_closest (int): Number of closest points to consider for each target. (e.g. if you indicate 1000, there will be 64000 psep values in input of the rsr, as each burst is composed of 64 echoes)
+        min_method (str): Minimization method used in the lmfit HK-fitting. Defaults to 'leastsq'.
 
     Returns:
         list: List of tuples containing target coordinates and RSR results.
@@ -121,7 +123,7 @@ def apply_rsr_batch(latlon_target_array, KD_tree, dictionary, powers_2D_array, c
         indices_closest = [dictionary[tuple(point)] for point in xyz_closest]
         powers_for_rsr = powers_2D_array[indices_closest]
         powers_for_rsr = powers_for_rsr.flatten()
-        f = rsr.run.processor(powers_for_rsr, fit_model='hk')
+        f = rsr.run.processor(powers_for_rsr, fit_model='hk', min_method=min_method)
         f_array.append(f)
 
     return list(zip(latlon_target_array, f_array))

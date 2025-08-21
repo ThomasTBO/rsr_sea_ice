@@ -29,7 +29,7 @@ def clean_csv(input_file):
         f.write(content)
 
 
-def arctic_grid(step_km=10, lat_min=72):
+def arctic_grid(step_km=10, lat_min=72, **kwargs):
     """Create a grid of points in the Arctic region.
 
     Args:
@@ -107,7 +107,8 @@ def is_ice(latlon_target, KD_tree):
     Returns:
         bool: True if the target point is over ice, False otherwise.
     """
-    xyz_closest = find_closest_points(KD_tree, latlon_target, k=1)
+    xyz_closest = find_closest_points(KD_tree, [latlon_target], k=1)
+    xyz_closest = xyz_closest[0]
     xyz_target = latlon_to_cartesian(latlon_target[0], latlon_target[1])
     distance = np.linalg.norm(xyz_closest - xyz_target) # in km
 
@@ -139,7 +140,7 @@ def build_KDtree(points_latlon):
     return cKDTree(points_cartesian), create_dictionary_from_xyz(points_cartesian)
 
 
-def find_closest_points(tree, latlon_target_list, k=1000):
+def find_closest_points(tree, latlon_target_list, k=1000, **kwargs):
     """Find the closest points in the KD-tree for multiple target points.
 
     Args:
