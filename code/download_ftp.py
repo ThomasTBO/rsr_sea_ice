@@ -28,30 +28,32 @@ def find_nc_files_to_read(path,year,month,lat_min=72, username='anonymous', pass
     ftp.connect(ftp_server, port=port)
     ftp.login(username, password)
     ftp.cwd(f'/SIR_SAR_FR/{year}/{month}/')
-    available_files = set(ftp.nlst())
+    available_files = list(ftp.nlst())
+    available_files = [f for f in available_files if f.endswith('.HDR')]
 
     filtered_nc_filenames = []
     
     print(f"Processing headers for {year}-{month}...")
 
     for i, filename in enumerate(available_files):
-        if filename.endswith('.HDR'):
-            with open(path+filename, 'wb') as local_file:
-                ftp.retrbinary(f'RETR {filename}', local_file.write)
-            try:
-                tree = ET.parse(path+filename)
-                root = tree.getroot()
-                prod_loc = root.find('.//Product_Location')
-                if prod_loc is not None:
-                    start_lat = float(prod_loc.find('Start_Lat').text) / 1e6
-                    stop_lat = float(prod_loc.find('Stop_Lat').text) / 1e6
-                    if start_lat > lat_min or stop_lat > lat_min:
-                        filtered_nc_filenames.append(filename.replace('.HDR', '.nc'))
-                    os.remove(path + filename)  # Remove the header file after checking
-                else :
-                    print(f"Product_Location not found in {filename}. Skipping.")
-            except Exception as e:
-                print(f"Error parsing {filename}: {e}")
+        if i % 20 == 0:
+            print(f"Processing header {i}/{len(available_files)}...")
+        with open(os.path.join(path, filename), 'wb') as local_file:
+            ftp.retrbinary(f'RETR {filename}', local_file.write)
+        try:
+            tree = ET.parse(os.path.join(path, filename))
+            root = tree.getroot()
+            prod_loc = root.find('.//Product_Location')
+            if prod_loc is not None:
+                start_lat = float(prod_loc.find('Start_Lat').text) / 1e6
+                stop_lat = float(prod_loc.find('Stop_Lat').text) / 1e6
+                if start_lat > lat_min or stop_lat > lat_min:
+                    filtered_nc_filenames.append(filename.replace('.HDR', '.nc')+"\n")
+                os.remove(os.path.join(path, filename))  # Remove the header file after checking
+            else :
+                print(f"Product_Location not found in {filename}. Skipping.")
+        except Exception as e:
+            print(f"Error parsing {filename}: {e}")
 
     # Write the filtered NetCDF filenames to a text file
     with open(os.path.join(path, 'nc_files_to_read.txt'), 'w') as f:
@@ -76,7 +78,9 @@ def download_nc_files(path, year, month, filenames, username='anonymous', passwo
         port (int): The port number for the FTP server.
         ftp_server (str): The address of the FTP server.
     """
-    
+
+    print(f"Starting FTP download for {year}-{month} in {path}...")
+
     ftp = FTP()
     ftp.connect(ftp_server, port=port)
     ftp.login(username, password)
@@ -89,8 +93,9 @@ def download_nc_files(path, year, month, filenames, username='anonymous', passwo
             print(f"{i}/{len(filenames)} files downloaded")
         filename = filename.strip()
         if filename in available_files:
-            with open(path+filename, 'wb') as local_file:
-                ftp.retrbinary(f'RETR {filename}', local_file.write)
+            if not os.path.exists(os.path.join(path, filename)):
+                with open(os.path.join(path, filename), 'wb') as local_file:
+                    ftp.retrbinary(f'RETR {filename}', local_file.write)
         else:
             print(f"file {filename} not found on FTP server.")
 

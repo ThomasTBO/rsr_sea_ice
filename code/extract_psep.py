@@ -58,7 +58,7 @@ def extract_psep(path, year, month, nb_files_per_batch=50, **kwargs):
     for i in range(0, nb_files, nb_files_per_batch):
         batch_files = nc_files[i:min(i + nb_files_per_batch, nb_files)]
         output_filename = os.path.join(psep_dir, f"psep_{year}_{month}_{i}_{i + len(batch_files)}.csv")
-        if not os.path.exists(output_filename):
+        if (not os.path.exists(output_filename)) or os.path.getsize(output_filename) < 10000 :
             extract_psep_batch(year, month, path, batch_files, lead_SeaIce_KDtree, lead_SeaIce_dictionary, i, **kwargs)
     
 
@@ -88,10 +88,10 @@ def extract_psep_batch(year, month, path, filenames, lead_SeaIce_KDtree, lead_Se
         csvfile.write('lat,lon,psep\n')
         for i,filename in enumerate(filenames):
             print(f'Processing file {i+1}/{len(filenames)} : {filename}')
-            with Dataset(filename, 'r') as nc:
+            with Dataset(os.path.join(nc_dir, filename), 'r') as nc:
                 lat_data = nc.variables['lat_85_ku'][:]
                 lon_data = nc.variables['lon_85_ku'][:]
-            power_max_2D_vector = extract_psep_file(os.path.join(path, filename), lead_SeaIce_KDtree, lead_SeaIce_dictionary, **kwargs)
+            power_max_2D_vector = extract_psep_file(os.path.join(nc_dir, filename), lead_SeaIce_KDtree, lead_SeaIce_dictionary, **kwargs)
             for burst in range(power_max_2D_vector.shape[0]):
                 if power_max_2D_vector[burst, 0] != 0:
                     csvfile.write(f'{lat_data[burst]},{lon_data[burst]},{power_max_2D_vector[burst, :]}\n')            
@@ -126,8 +126,7 @@ def extract_psep_file(filename, lead_SeaIce_KDtree, lead_SeaIce_dictionary, nb_w
     latlon_bursts_to_filter = [(lat_data[burst], lon_data[burst], burst) for burst in range(nb_bursts)]
     bursts_filtered = filter_bursts(latlon_bursts_to_filter, lead_SeaIce_KDtree, lead_SeaIce_dictionary, **kwargs)
     nb_bursts_filtered = len(bursts_filtered)
-    print(f"Number of bursts to process: {nb_bursts_filtered/nb_bursts}")
-    
+    print(f"Number of bursts to process: {nb_bursts_filtered}/{nb_bursts}")
 
     # Process remaining bursts
     power_max_2D_vector = np.zeros((nb_bursts, 64))
@@ -141,7 +140,7 @@ def extract_psep_file(filename, lead_SeaIce_KDtree, lead_SeaIce_dictionary, nb_w
     return power_max_2D_vector
     
     
-def filter_bursts(latlon_burst_list, lead_SeaIce_KDtree, lead_SeaIce_dictionary, lat_min=72):
+def filter_bursts(latlon_burst_list, lead_SeaIce_KDtree, lead_SeaIce_dictionary, lat_min=72, **kwargs):
     """Filters the bursts based on latitude and lead information.
 
     Args:
@@ -245,9 +244,9 @@ def extract_psep_echo(complex_echo, gain, window_frac_psep=0.05, **kwargs):
     psep_db_calibrated = psep_db + gain
     
     return psep_db_calibrated
-    
-    
-def leading_edge(waveform, window_frac_leading_edge=[0.03,0.06,0.09]):
+
+
+def leading_edge(waveform, window_frac_leading_edge=[0.03,0.06,0.09], **kwargs):
     """Compute the leading edge of a waveform signal.
     
     The leading edge is defined as the position of the maximum integrated echo amplitude gradient 
